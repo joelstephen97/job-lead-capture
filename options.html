@@ -1,0 +1,135 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Lead Capture — Options</title>
+    <link rel="stylesheet" href="options.css" />
+  </head>
+  <body>
+    <main class="wrap">
+      <header class="header">
+        <div class="brand">
+          <img class="brandLogo" src="assets/leadingleads-logo.svg" alt="" />
+          <div>
+            <div class="title">LeadingLeads — Options</div>
+            <div class="subtitle">Choose how leads are captured and stored locally.</div>
+          </div>
+        </div>
+      </header>
+
+      <section class="card">
+        <div class="sectionTitle">Keyword terms</div>
+        <div class="hint">
+          One term per line. Matching is case-insensitive and uses “contains”.
+          If empty, everything matches.
+        </div>
+        <textarea id="keywords" class="textarea" placeholder="sales&#10;partnerships&#10;account executive"></textarea>
+
+        <div class="row row--gap">
+          <label class="checkbox">
+            <input id="requireEmail" type="checkbox" />
+            Only store matches that include an email on the page/card
+          </label>
+        </div>
+
+        <div class="row row--gap">
+          <label class="checkbox">
+            <input id="clearAfterGmail" type="checkbox" />
+            Clear stored leads after opening Gmail compose
+          </label>
+        </div>
+
+        <div class="row row--gap">
+          <label class="checkbox">
+            <input id="autoScanEnabled" type="checkbox" />
+            Auto-scan while browsing (captures leads in the background)
+          </label>
+        </div>
+
+        <div class="row row--gap">
+          <label class="checkbox">
+            <input id="autoScanVisibleOnly" type="checkbox" />
+            Auto-scan only what’s visible on screen (recommended)
+          </label>
+        </div>
+
+        <div class="row row--gap">
+          <label class="checkbox">
+            <input id="badgeEnabled" type="checkbox" />
+            Show a small badge when new leads are captured
+          </label>
+        </div>
+
+        <div class="row row--gap">
+          <label class="field">
+            <span class="fieldLabel">Theme</span>
+            <select id="theme" class="select">
+              <option value="system">System</option>
+              <option value="dark">Dark</option>
+              <option value="light">Light</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="row row--gap">
+          <label class="field">
+            <span class="fieldLabel">Max stored leads</span>
+            <input id="maxLeads" class="input" type="number" min="100" step="100" />
+          </label>
+        </div>
+
+        <div class="cardInset">
+          <div class="hint">
+            By default, auto-scan runs on <b>LinkedIn</b>. To auto-scan other job boards, you can grant optional permission for <b>all sites</b>.
+          </div>
+          <div class="row row--actions row--gap">
+            <button id="grantAllSitesBtn" class="btn">Enable all-sites auto-scan</button>
+            <button id="revokeAllSitesBtn" class="btn">Disable all-sites auto-scan</button>
+          </div>
+          <div id="permStatus" class="status"></div>
+        </div>
+
+        <div class="row row--actions">
+          <button id="saveBtn" class="btn btn--primary">Save</button>
+          <button id="resetBtn" class="btn">Reset defaults</button>
+        </div>
+
+        <div id="status" class="status"></div>
+      </section>
+
+      <section class="card">
+        <div class="sectionTitle">How scanning works</div>
+        <ul class="list">
+          <li>Click the extension → “Scan this page”.</li>
+          <li>On LinkedIn job search pages, it tries to read each job card and match your terms.</li>
+          <li>If no cards are found, it falls back to scanning the page text for emails.</li>
+        </ul>
+        <div class="hint" style="margin-top: 10px;">
+          This extension reads only what is rendered in your browser and stores leads locally in your Chrome profile.
+          It does not send scraped data to any server. You are responsible for using it in compliance with each site’s Terms of Service.
+        </div>
+        <div class="hint">
+          For convenience, the extension stores a short <b>context snippet</b> from the card/page where the email was found so you can understand why it was captured.
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="sectionTitle">Privacy & Terms</div>
+        <div class="hint">
+          Please read this carefully — it’s designed to keep you informed and in control:
+        </div>
+        <ul class="list">
+          <li><b>Local-only storage:</b> your leads are saved to your Chrome profile via <code>chrome.storage.local</code>.</li>
+          <li><b>No data sent out:</b> LeadingLeads does not upload leads to any server or third-party service.</li>
+          <li><b>On-device scanning:</b> it reads the rendered page content in your browser; nothing is scraped server-side.</li>
+          <li><b>Site Terms:</b> you are responsible for using this extension in compliance with each website’s Terms of Service.</li>
+        </ul>
+      </section>
+    </main>
+
+    <script src="options.js"></script>
+  </body>
+</html>
+
+

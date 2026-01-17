@@ -1,0 +1,83 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Lead Capture — Leads</title>
+    <link rel="stylesheet" href="leads.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">
+        <img class="brandLogo" src="assets/leadingleads-logo.svg" alt="" />
+        <div>
+          <div class="title">LeadingLeads — Leads</div>
+          <div class="subtitle" id="subtitle">Loading…</div>
+        </div>
+      </div>
+      <div class="topActions">
+        <a class="link" href="options.html" target="_blank" rel="noreferrer">Options</a>
+      </div>
+    </header>
+
+    <main class="wrap">
+      <section class="card">
+        <div class="controls">
+          <input id="search" class="input input--grow" placeholder="Search company, email, job title, source…" />
+          <select id="sourceFilter" class="select">
+            <option value="">All sources</option>
+          </select>
+          <select id="pageSize" class="select">
+            <option value="25">25 / page</option>
+            <option value="50">50 / page</option>
+            <option value="100">100 / page</option>
+          </select>
+          <button id="refreshBtn" class="btn">Refresh</button>
+        </div>
+
+        <div class="bulkBar">
+          <label class="checkbox">
+            <input id="selectAllPage" type="checkbox" />
+            Select page
+          </label>
+          <div class="bulkActions">
+            <button id="copyBccBtn" class="btn">Copy BCC</button>
+            <button id="gmailBtn" class="btn btn--primary">Move to Gmail BCC</button>
+            <button id="exportBtn" class="btn">Export CSV</button>
+            <button id="deleteSelectedBtn" class="btn btn--danger">Delete selected</button>
+            <button id="clearAllBtn" class="btn btn--danger">Clear all</button>
+          </div>
+        </div>
+
+        <div class="status" id="status"></div>
+
+        <div class="tableWrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th class="colCheck"></th>
+                <th>Company</th>
+                <th>Email</th>
+                <th>Job title</th>
+                <th>Source</th>
+                <th>Captured</th>
+                <th class="colActions">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="tbody"></tbody>
+          </table>
+        </div>
+
+        <div class="pager">
+          <button id="prevBtn" class="btn">Prev</button>
+          <div class="pagerText" id="pagerText">—</div>
+          <button id="nextBtn" class="btn">Next</button>
+        </div>
+      </section>
+    </main>
+
+    <script src="leads.js"></script>
+  </body>
+</html>
+
+
