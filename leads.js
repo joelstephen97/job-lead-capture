@@ -165,6 +165,7 @@ function renderTable() {
 
       const isOpen = state.openDetails.has(rawKey);
 
+      const hasUrl = !!(l.jobUrl || l.sourceUrl);
       const mainRow = `
         <tr data-key="${key}">
           <td class="colCheck"><input class="js-check" type="checkbox" data-key="${key}" ${checked} /></td>
@@ -177,9 +178,9 @@ function renderTable() {
           <td class="mono">${escapeHtml(when)}</td>
           <td class="colActions">
             <div class="rowActions">
-              <button class="btn js-details" data-key="${key}">${isOpen ? "Hide details" : "Details"}</button>
-              <button class="btn js-open" data-url="${escapeHtml(openUrl)}">Open</button>
-              <button class="btn btn--danger js-del" data-key="${key}">Delete</button>
+              <button class="btn btn--xs btn--subtle js-details" data-key="${key}" title="${isOpen ? "Hide details" : "Show details"}">${isOpen ? "▲" : "▼"}</button>
+              ${hasUrl ? `<button class="btn btn--xs btn--subtle js-open" data-url="${escapeHtml(openUrl)}" title="Open source">↗</button>` : ''}
+              <button class="btn btn--xs btn--danger-subtle js-del" data-key="${key}" title="Delete">✕</button>
             </div>
           </td>
         </tr>

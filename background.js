@@ -232,16 +232,69 @@ function scanPageInTab({ keywords, requireEmail }) {
     document.querySelector('meta[name="application-name"]')?.content?.trim() ||
     "";
 
-  // LinkedIn-ish job card selectors (best-effort; LinkedIn changes often).
+  const isLinkedIn = location.host.includes("linkedin.com");
+
+  // Job board card selectors (best-effort, covers major job sites).
   const cardSelectors = [
+    // Generic job card patterns
+    "[class*='job-card']",
+    "[class*='job-listing']",
+    "[class*='job-result']",
+    "[data-testid*='job']",
+    // Common job board patterns
     "li.jobs-search-results__list-item",
     ".job-card-container",
     ".base-search-card",
-    "[data-view-name='job-card']"
+    "[data-view-name='job-card']",
+    // Indeed patterns
+    ".job_seen_beacon",
+    ".jobsearch-ResultsList li",
+    // Glassdoor patterns
+    "[data-test='jobListing']",
+    // Generic article/card patterns
+    "article[class*='job']",
+    ".job-posting",
+    // LinkedIn profile & contact info patterns
+    ".pv-contact-info",
+    ".pv-contact-info__contact-type",
+    "[class*='contact-info']",
+    ".ci-email",
+    ".pv-profile-section",
+    ".profile-detail",
+    // LinkedIn profile cards and sections
+    ".artdeco-modal__content",
+    ".pv-top-card",
+    "[class*='profile-card']",
+    // LinkedIn search results (people/companies)
+    ".reusable-search__result-container",
+    ".entity-result",
+    "[data-view-name='search-entity-result-universal-template']",
+    // LinkedIn messaging where emails might appear
+    ".msg-conversation-card",
+    ".msg-s-message-list-content",
+    // LinkedIn feed posts
+    ".feed-shared-update-v2",
+    ".feed-shared-update-v2__content",
+    ".update-components-text",
+    ".feed-shared-text",
+    "[data-urn*='activity']",
+    ".feed-shared-inline-show-more-text",
+    ".break-words",
+    // LinkedIn feed post containers
+    ".fie-impression-container",
+    "[data-id*='urn:li:activity']",
+    // LinkedIn article/newsletter
+    ".reader-article-content",
+    ".article-content"
   ];
-  const cards = cardSelectors
+  let cards = cardSelectors
     .flatMap((sel) => Array.from(document.querySelectorAll(sel)))
     .filter(Boolean);
+
+  // Deduplicate - avoid scanning nested elements multiple times
+  cards = cards.filter((card, idx, arr) => 
+    !arr.slice(0, idx).some(prev => prev.contains(card) || card.contains(prev))
+  );
 
   const leads = [];
 
@@ -266,7 +319,13 @@ function scanPageInTab({ keywords, requireEmail }) {
   for (const card of cards) {
     const text = card.innerText || card.textContent || "";
     const { matched, matchedTerms } = keywordMatchLocal(text);
-    if (!matched) continue;
+    
+    // Extract emails first to check if we should capture even without keyword match
+    const emails = extractEmailsLocal(text);
+    
+    // For LinkedIn posts with emails, be lenient with keyword matching
+    const hasEmailsOnLinkedIn = isLinkedIn && emails.length > 0;
+    if (!matched && !hasEmailsOnLinkedIn) continue;
 
     const company = pickText(card, [
       ".job-card-container__company-name",
@@ -274,7 +333,10 @@ function scanPageInTab({ keywords, requireEmail }) {
       ".base-search-card__subtitle",
       ".base-search-card__subtitle a",
       "[data-tracking-control-name*='company']",
-      "a[href*='/company/']"
+      "a[href*='/company/']",
+      // LinkedIn post author
+      ".update-components-actor__title",
+      ".update-components-actor__meta-link"
     ]);
 
     const jobTitle = pickText(card, [
@@ -284,8 +346,38 @@ function scanPageInTab({ keywords, requireEmail }) {
       "h2"
     ]);
 
-    const emails = extractEmailsLocal(text);
-    for (const email of emails) addLead(email, company, jobTitle, matchedTerms, text);
+    const effectiveMatchedTerms = matched ? matchedTerms : ["linkedin-post"];
+    for (const email of emails) addLead(email, company, jobTitle, effectiveMatchedTerms, text);
+  }
+
+  // LinkedIn-specific: extract emails from mailto links and contact sections
+  if (isLinkedIn) {
+    const mailtoLinks = document.querySelectorAll("a[href^='mailto:']");
+    for (const link of mailtoLinks) {
+      const href = link.getAttribute("href") || "";
+      const emailMatch = href.match(/^mailto:([^?]+)/i);
+      if (!emailMatch) continue;
+      
+      const email = emailMatch[1].toLowerCase().trim();
+      if (!email || leads.some(l => l.email === email)) continue;
+      
+      // Try to get context from surrounding elements
+      const section = link.closest(".pv-contact-info, .artdeco-modal__content, .pv-profile-section, section") || link.parentElement;
+      const contextText = section?.textContent || "";
+      const { matched, matchedTerms } = keywordMatchLocal(contextText);
+      
+      // For LinkedIn contact info, be lenient with keywords if email is found
+      const profileName = document.querySelector(".pv-top-card--list li, .text-heading-xlarge, h1")?.textContent?.trim() || "";
+      const companyName = document.querySelector(".pv-top-card--experience-list-item, .pv-text-details__right-panel-item-text")?.textContent?.trim() || "";
+      
+      addLead(
+        email,
+        companyName || profileName || metaSiteName,
+        "",
+        matched ? matchedTerms : ["linkedin-contact"],
+        contextText || `Contact email for ${profileName}`
+      );
+    }
   }
 
   // Generic fallback: scan full page text for emails if card-based scan found none.
@@ -314,7 +406,17 @@ async function scanActiveTab() {
   if (!tab?.id) throw new Error("No active tab found.");
 
   const settings = await getSettings();
+  
+  // Check if we have permission to access this tab's URL
+  const tabUrl = tab.url || "";
+  const isAllowedUrl = tabUrl.startsWith("http://") || tabUrl.startsWith("https://");
+  if (!isAllowedUrl) {
+    throw new Error("Cannot scan this page (browser internal pages are not supported).");
+  }
+
   let response;
+  
+  // Try sending message to existing content script
   try {
     response = await chrome.tabs.sendMessage(tab.id, {
       type: "MANUAL_SCAN",
@@ -323,10 +425,36 @@ async function scanActiveTab() {
       allowFullPageFallback: true
     });
   } catch {
-    // Most likely no content script on this site.
-    throw new Error(
-      "Scanning isn't enabled on this site. Open Options and enable all-sites access (or scan on LinkedIn)."
-    );
+    // Content script not present - try injecting it dynamically
+    const hasAllUrls = await chrome.permissions.contains({ origins: ["<all_urls>"] });
+    if (!hasAllUrls) {
+      throw new Error(
+        "Scanning isn't enabled on this site. Open Options and enable all-sites access to scan any page."
+      );
+    }
+
+    // Inject the content script dynamically
+    try {
+      await chrome.scripting.executeScript({
+        target: { tabId: tab.id },
+        files: ["contentScript.js"]
+      });
+      
+      // Wait a moment for script to initialize
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      // Retry sending message
+      response = await chrome.tabs.sendMessage(tab.id, {
+        type: "MANUAL_SCAN",
+        keywords: settings.keywords,
+        requireEmail: settings.requireEmail,
+        allowFullPageFallback: true
+      });
+    } catch (injectErr) {
+      throw new Error(
+        `Failed to scan this page: ${injectErr?.message || "unknown error"}. Try refreshing the page.`
+      );
+    }
   }
 
   const foundLeads = Array.isArray(response?.leads) ? response.leads : [];
@@ -341,6 +469,35 @@ chrome.runtime.onInstalled.addListener(async () => {
   const leads = await getLeads();
   await setLeads(leads);
   await syncAllSitesAutoScanContentScript(settings);
+});
+
+// When all-sites permission is granted, inject content script into existing tabs
+chrome.permissions.onAdded.addListener(async (permissions) => {
+  const hasAllUrls = permissions.origins?.includes("<all_urls>");
+  if (!hasAllUrls) return;
+
+  const settings = await getSettings();
+  if (!settings.autoScanEnabled) return;
+
+  // Inject into all http/https tabs
+  try {
+    const tabs = await chrome.tabs.query({});
+    for (const tab of tabs) {
+      if (!tab.id || !tab.url) continue;
+      if (!tab.url.startsWith("http://") && !tab.url.startsWith("https://")) continue;
+      
+      try {
+        await chrome.scripting.executeScript({
+          target: { tabId: tab.id },
+          files: ["contentScript.js"]
+        });
+      } catch {
+        // Ignore tabs we can't inject into (e.g., chrome:// pages)
+      }
+    }
+  } catch {
+    // Ignore errors
+  }
 });
 
 chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {

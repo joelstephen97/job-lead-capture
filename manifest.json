@@ -2,10 +2,9 @@
   "manifest_version": 3,
   "name": "LeadingLeads",
   "short_name": "LeadingLeads",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "LeadingLeads: capture job-board leads (company + email) locally in your browser and move emails to Gmail BCC.",
-  "permissions": ["storage", "scripting", "permissions"],
-  "host_permissions": ["https://*.linkedin.com/*"],
+  "permissions": ["storage", "scripting", "permissions", "activeTab"],
   "optional_host_permissions": ["<all_urls>"],
   "background": {
     "service_worker": "background.js",
@@ -17,13 +16,6 @@
     "48": "assets/icons/icon48.png",
     "128": "assets/icons/icon128.png"
   },
-  "content_scripts": [
-    {
-      "matches": ["https://*.linkedin.com/*"],
-      "js": ["contentScript.js"],
-      "run_at": "document_idle"
-    }
-  ],
   "action": {
     "default_title": "LeadingLeads",
     "default_icon": {

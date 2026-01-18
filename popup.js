@@ -15,6 +15,13 @@ function normalizeEmail(email) {
   return String(email || "").trim().toLowerCase();
 }
 
+function isValidEmail(email) {
+  const normalized = normalizeEmail(email);
+  if (!normalized) return false;
+  // Standard email regex - must have user@domain.tld format
+  return /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(normalized);
+}
+
 function normalizeCompany(company) {
   return String(company || "").trim();
 }
@@ -73,21 +80,24 @@ function renderLeads(leads) {
       const company = escapeHtml(l.company || "(unknown)");
       const email = escapeHtml(l.email || "");
       const when = l.createdAt ? new Date(l.createdAt).toLocaleString() : "";
-      const metaLeft = escapeHtml(l.jobTitle || l.sourceSite || "");
+      const source = escapeHtml(l.sourceSite || l.sourceHost || "");
       const key = escapeHtml(leadKey(l));
       const openUrl = escapeHtml(l.jobUrl || l.sourceUrl || "");
+      const hasUrl = !!(l.jobUrl || l.sourceUrl);
       return `
         <div class="lead" data-key="${key}">
           <div class="leadTop">
-            <div class="leadCompany" title="${company}">${company}</div>
-            <div class="row row--gap">
-              <button class="btn js-open" data-url="${openUrl}">Open</button>
-              <button class="btn btn--danger js-del" data-key="${key}">Delete</button>
+            <div class="leadInfo">
+              <div class="leadCompany" title="${company}">${company}</div>
+              <div class="leadEmail">${email}</div>
+            </div>
+            <div class="leadActions">
+              ${hasUrl ? `<button class="btn btn--icon btn--secondary js-open" data-url="${openUrl}" title="Open source">↗</button>` : ''}
+              <button class="btn btn--icon btn--danger js-del" data-key="${key}" title="Delete">✕</button>
             </div>
           </div>
-          <div class="leadEmail">${email}</div>
           <div class="leadMeta">
-            <div title="${metaLeft}">${metaLeft}</div>
+            <div title="${source}">${source}</div>
             <div>${escapeHtml(when)}</div>
           </div>
         </div>
@@ -215,6 +225,10 @@ async function addManualLead() {
   const company = normalizeCompany($("manualCompany").value);
   if (!email) {
     $("extractStatus").textContent = "Email is required.";
+    return;
+  }
+  if (!isValidEmail(email)) {
+    $("extractStatus").textContent = "Please enter a valid email address.";
     return;
   }
 

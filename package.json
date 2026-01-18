@@ -1,0 +1,18 @@
+{
+  "name": "leadingleads",
+  "version": "0.2.0",
+  "description": "Chrome extension to capture job-board leads locally",
+  "private": true,
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:debug": "playwright test --debug",
+    "build": "node scripts/build.js"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.48.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

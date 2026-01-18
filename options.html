@@ -81,18 +81,18 @@
 
         <div class="cardInset">
           <div class="hint">
-            By default, auto-scan runs on <b>LinkedIn</b>. To auto-scan other job boards, you can grant optional permission for <b>all sites</b>.
+            Grant optional permission to auto-scan <b>any job board</b> or website for leads.
           </div>
           <div class="row row--actions row--gap">
-            <button id="grantAllSitesBtn" class="btn">Enable all-sites auto-scan</button>
-            <button id="revokeAllSitesBtn" class="btn">Disable all-sites auto-scan</button>
+            <button id="grantAllSitesBtn" class="btn btn--secondary">Enable all-sites auto-scan</button>
+            <button id="revokeAllSitesBtn" class="btn btn--secondary">Disable all-sites auto-scan</button>
           </div>
           <div id="permStatus" class="status"></div>
         </div>
 
         <div class="row row--actions">
-          <button id="saveBtn" class="btn btn--primary">Save</button>
-          <button id="resetBtn" class="btn">Reset defaults</button>
+          <button id="saveBtn" class="btn btn--primary">Save Changes</button>
+          <button id="resetBtn" class="btn btn--secondary">Reset Defaults</button>
         </div>
 
         <div id="status" class="status"></div>
@@ -102,7 +102,7 @@
         <div class="sectionTitle">How scanning works</div>
         <ul class="list">
           <li>Click the extension → “Scan this page”.</li>
-          <li>On LinkedIn job search pages, it tries to read each job card and match your terms.</li>
+          <li>On job search pages, it tries to read each job card and match your terms.</li>
           <li>If no cards are found, it falls back to scanning the page text for emails.</li>
         </ul>
         <div class="hint" style="margin-top: 10px;">

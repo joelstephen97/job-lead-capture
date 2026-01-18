@@ -21,32 +21,32 @@
     <section class="card">
       <div class="row row--space">
         <button id="scanBtn" class="btn btn--primary">Scan this page</button>
-        <button id="refreshBtn" class="btn">Refresh</button>
+        <button id="refreshBtn" class="btn btn--secondary btn--sm">Refresh</button>
       </div>
       <div id="status" class="status"></div>
     </section>
 
     <section class="card">
       <div class="row row--space">
-        <div class="sectionTitle">Leads</div>
+        <div class="sectionTitle">Captured Leads</div>
         <div class="pill"><span id="leadCount">0</span></div>
       </div>
 
-      <div class="row row--start row--gap">
-        <button id="openLeadsBtn" class="btn">Open Leads</button>
-        <button id="copyBccBtn" class="btn">Copy BCC</button>
-        <button id="gmailBtn" class="btn btn--primary">Move to Gmail BCC</button>
+      <div class="btnGroup">
+        <button id="openLeadsBtn" class="btn btn--secondary">View All</button>
+        <button id="gmailBtn" class="btn btn--primary">Open in Gmail</button>
+      </div>
+
+      <div class="btnGroup">
+        <button id="copyBccBtn" class="btn btn--secondary btn--sm">Copy BCC</button>
+        <button id="exportCsvBtn" class="btn btn--secondary btn--sm">Export CSV</button>
+        <button id="clearBtn" class="btn btn--danger btn--sm">Clear All</button>
       </div>
 
       <label class="checkbox">
         <input id="clearAfterGmail" type="checkbox" />
-        Clear stored leads after opening Gmail
+        Clear leads after opening Gmail
       </label>
-
-      <div class="row row--start row--gap">
-        <button id="exportCsvBtn" class="btn">Export CSV</button>
-        <button id="clearBtn" class="btn btn--danger">Clear</button>
-      </div>
 
       <div class="divider"></div>
 
@@ -54,17 +54,20 @@
     </section>
 
     <section class="card">
-      <div class="sectionTitle">Manual add</div>
+      <div class="sectionTitle">Add Manually</div>
       <div class="grid">
         <input id="manualCompany" class="input" placeholder="Company (optional)" />
-        <input id="manualEmail" class="input" placeholder="Email (required)" />
+        <input id="manualEmail" class="input" placeholder="Email address" />
       </div>
-      <button id="manualAddBtn" class="btn btn--primary btn--full">Add lead</button>
-      <div class="hint">Tip: you can also paste text with emails and click “Extract emails” below.</div>
-      <textarea id="manualText" class="textarea" placeholder="Paste any text here…"></textarea>
-      <div class="row row--space row--gap">
-        <button id="extractEmailsBtn" class="btn">Extract emails</button>
-        <button id="clearTextBtn" class="btn">Clear text</button>
+      <button id="manualAddBtn" class="btn btn--primary btn--full">Add Lead</button>
+      
+      <div class="divider"></div>
+      
+      <div class="hint">Paste text containing emails to extract them automatically.</div>
+      <textarea id="manualText" class="textarea" placeholder="Paste text with emails here…"></textarea>
+      <div class="btnGroup">
+        <button id="extractEmailsBtn" class="btn btn--primary">Extract Emails</button>
+        <button id="clearTextBtn" class="btn btn--secondary btn--sm">Clear</button>
       </div>
       <div id="extractStatus" class="status"></div>
     </section>
@@ -72,5 +75,3 @@
     <script src="popup.js"></script>
   </body>
 </html>
-
-

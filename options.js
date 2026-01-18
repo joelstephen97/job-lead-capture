@@ -56,7 +56,7 @@ async function refreshPermissionStatus(settings) {
   const wantsAllSites = !!settings?.autoScanAllSites;
   $("permStatus").textContent = hasAllUrls
     ? `All-sites permission: granted. All-sites auto-scan setting: ${wantsAllSites ? "ON" : "OFF"}.`
-    : "All-sites permission: not granted (auto-scan will run on LinkedIn only).";
+    : "All-sites permission: not granted. Enable to auto-scan any job board.";
 
   $("grantAllSitesBtn").disabled = hasAllUrls;
   $("revokeAllSitesBtn").disabled = !hasAllUrls;
