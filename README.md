@@ -1,118 +1,83 @@
-## LeadingLeads (Chrome Extension)
+# job-lead-capture (LeadingLeads)
 
-> Your best friend for capturing leads while browsing — perfect for **salespeople**, **recruiters**, and **job hunters**.
+A Manifest V3 Chrome extension that pulls email addresses out of the page you are looking at (job boards, LinkedIn posts and profiles, any page with emails in it), stores them locally as "leads" with company and source, and lets you copy them as a BCC list, open a Gmail compose with them in BCC, or export them to CSV.
 
-### Why LeadingLeads?
+![JavaScript](https://img.shields.io/badge/JavaScript-ES2022-yellow) ![License](https://img.shields.io/badge/license-MIT-green)
 
-- **Save time**: Automatically capture contact emails while you browse job boards, company pages, or any website
-- **Stay organized**: All leads stored locally with company name, source, and context
-- **Take action fast**: One-click Gmail BCC, copy to clipboard, or export to CSV for your CRM
-- **Respect privacy**: 100% local — your data never leaves your browser
+**Status: archived, kept for reference, not maintained.** Read "Terms of service" below before using it.
 
-### What it does
-- **Scan the current page** (e.g., job listings on any job board) for postings that **match your keyword terms**
-- **Extract emails** found on the page / inside job cards
-- **Store leads** (company + email) in `chrome.storage.local` (de-duped)
-- **Move to Gmail BCC**: open a Gmail compose window with all stored emails in the **BCC** field (optionally clearing the stored leads)
-- **Auto-scan while browsing**: can automatically scan job boards in the background when permission is granted
-- **Small badge alert**: shows a brief badge on the extension icon when new leads are captured (no notifications permission)
+## Why
 
-### Perfect For
+I built this in January 2026 while job hunting. Recruiters in my region often post "send your CV to hr@company.com" in LinkedIn posts and job cards, and I was copying those addresses by hand into a spreadsheet. This extension automated that: keep a few keyword terms (for example "sales", "frontend", "Abu Dhabi"), scan the page, and every email inside a matching card or post gets saved with the company name, job title, source URL and a short context snippet. Then one click drops them into a Gmail BCC field.
 
-| Use Case | How LeadingLeads Helps |
-|----------|------------------------|
-| **Sales prospecting** | Capture emails from company websites, directories, and professional networks |
-| **Job hunting** | Save recruiter emails and company contacts while browsing job boards |
-| **Business development** | Build partnership contact lists from industry websites |
-| **Recruiting** | Collect candidate emails from professional profiles and portfolios |
+It is also a fairly complete example of an MV3 extension with a service worker, optional host permissions, a dynamically registered content script, `chrome.storage.local`, a popup, an options page and a full-page leads manager, with a Playwright test suite that loads the unpacked extension in Chromium.
 
-### Supported Websites
-LeadingLeads works with any website, including:
-- Indeed
-- Glassdoor
-- ZipRecruiter
-- Monster
-- CareerBuilder
-- AngelList / Wellfound
-- Remote.co
-- FlexJobs
-- Company career pages
-- Any site with emails in the page content
+## Terms of service
 
-### Install (developer mode)
-1. Open `chrome://extensions`
-2. Enable **Developer mode**
-3. Click **Load unpacked**
-4. Select the folder: `job-lead-capture/`
+This extension reads profile, post, messaging and search-result markup on linkedin.com and copies email addresses out of it. LinkedIn's User Agreement prohibits using browser plugins, scrapers or any automated means to copy profiles and other data from its site, and most job boards have similar clauses. Auto-scan mode, which watches the DOM on every page once you grant `<all_urls>`, makes this worse, not better. I stopped using and developing it for that reason, and I am not adding features. The code stays public as a reference for MV3 patterns and extension testing. If you run it anyway, that is your call and your responsibility, including anti-spam law (CAN-SPAM, GDPR) for whatever you send to the captured addresses.
 
-Note: Chrome's manifest icons are PNG-based. LeadingLeads includes PNG icons generated from `assets/leadingleads-logo.svg` for full compatibility across Chrome UI surfaces.
+## Quickstart (developer mode)
 
-### Use
-1. Click the extension icon → open **Options** → set your keyword terms (one per line)
-2. Visit any job board or page containing emails
-3. Click the extension icon → **Scan this page**
-4. Use:
-   - **Copy BCC** to copy a comma-separated list
-   - **Move to Gmail BCC** to open Gmail compose with BCC prefilled
-   - **Export CSV** to download your lead list
-
-### Notes / limitations
-- Many job sites often **do not show emails directly** on job cards; this extension can only capture emails that are present in the page text/DOM.
-- Job board markup changes frequently; the scanner uses **best-effort selectors** plus a **generic fallback** email scan.
-- Scanning runs only when you click **Scan this page** (it uses `activeTab`, not always-on site permissions).
-
-### Auto-scan permissions
-- To enable auto-scan on any site, open **Options** and click **Enable all-sites auto-scan** (this requests optional `<all_urls>` permission).
-- Once granted, the extension will automatically scan pages in the background as you browse.
-
-### Privacy & TOS Compliance
-
-LeadingLeads is designed to be a **responsible helper** that respects both your privacy and website terms of service:
-
-#### Your Privacy
-- **100% Local Storage**: All leads are saved only to your Chrome profile via `chrome.storage.local`
-- **No Cloud Sync**: Your data never leaves your computer
-- **No Analytics**: No tracking, no telemetry, no external requests
-- **You Own Your Data**: Export, delete, or clear your leads anytime
-
-#### TOS-Friendly Design
-- **User-Initiated Scanning**: By default, scanning only happens when you click "Scan this page" (uses `activeTab` permission)
-- **Visible Content Only**: Auto-scan only captures content you've scrolled to and can see on screen
-- **Optional Permissions**: All-sites access is optional — you grant it explicitly in Options
-- **No Automation**: The extension reads what you see — it doesn't scrape, crawl, or bypass any protections
-- **Transparent**: Every captured lead shows its source URL and capture type so you know exactly where it came from
-
-#### Your Responsibility
-- This extension is a helper tool — you are responsible for using it in compliance with each website's Terms of Service
-- Respect rate limits and avoid excessive scanning
-- Use captured emails ethically and in compliance with anti-spam laws (CAN-SPAM, GDPR, etc.)
-
-### Development
-
-#### Running Tests
 ```bash
-npm install
+git clone https://github.com/joelstephen97/job-lead-capture.git
+```
 
-# Run tests headless (default) - ~3 minutes
-npm test
+1. Open `chrome://extensions`, turn on Developer mode.
+2. Load unpacked, select the `job-lead-capture/` folder.
+3. Click the icon, open Options, set keyword terms (one per line) and Save.
+4. On a page, click the icon and press "Scan this page".
 
-# Run tests with browser visible (for debugging)
+No build step is needed to run it. `npm run build` only zips the extension files into `dist/leadingleads.zip`.
+
+## Usage
+
+Popup (`popup.html`):
+
+- Scan this page: runs the content script in the active tab (uses `activeTab`; if the content script is not present and you have not granted all-sites access, it tells you so).
+- Manual add: type an email and optional company.
+- Extract emails from text: paste any text, it pulls out every email with a regex and stores them.
+- Copy BCC, Move to Gmail BCC (opens `mail.google.com/mail/?view=cm&bcc=...`), Export CSV, Clear all.
+- Open Leads: the full leads page with search, source filter, pagination, multi-select delete, CSV export.
+
+Options (`options.html`): keyword terms, require email, clear after Gmail, auto-scan on/off, visible-only auto-scan, badge on/off, max stored leads (default 2000), theme, and buttons to grant or revoke the optional `<all_urls>` permission.
+
+## How it works
+
+- `background.js` (service worker) owns settings and the leads array in `chrome.storage.local`, de-duplicates by `email|company`, builds the Gmail URL, bumps the badge, and registers or unregisters `contentScript.js` for `<all_urls>` depending on settings and whether the optional permission is granted.
+- `contentScript.js` walks a list of card selectors (generic job-card classes, Indeed, Glassdoor, and many LinkedIn profile, feed, search and messaging selectors), checks each card's text against your keywords, and regex-extracts emails. On LinkedIn it also reads `mailto:` links in contact-info sections. In auto-scan mode a `MutationObserver` re-runs the scan at most every 6 seconds and only sends leads it has not seen on that page.
+- `popup.js`, `options.js`, `leads.js` are plain DOM scripts that message the service worker.
+- Nothing leaves the browser: no network requests, no analytics. Leads live only in your Chrome profile.
+
+## Project structure
+
+```
+manifest.json        MV3 manifest (storage, scripting, permissions, activeTab; optional <all_urls>)
+background.js        service worker: storage, merge, Gmail URL, content-script registration
+contentScript.js     page scanner (manual and auto modes)
+popup.*  options.*  leads.*   the three UI surfaces
+assets/              icons (PNG) and source SVG
+scripts/build.js     zips extension files into dist/
+tests/               Playwright specs that load the unpacked extension
+playwright.config.js
+```
+
+## Tests
+
+```bash
+npm ci
+npm test              # headless, ~1.5 min, 291 tests
 HEADLESS=false npm test
 ```
 
-Tests use Playwright with Chrome's new headless mode (`--headless=new`). 269 tests complete in ~3 minutes.
+The suite covers extension loading, popup/options/leads UI, manual add, text extraction, settings persistence, de-duplication and the LinkedIn email regex cases. It runs 7 files in parallel, each with its own Chromium profile. On a loaded machine a handful of tests are timing-sensitive and flake; they pass when re-run alone (`npx playwright test tests/manual-add.spec.js:303 --workers=1`).
 
-#### Building for Distribution
-```bash
-npm run build
-```
-This creates `dist/leadingleads.zip` containing only the extension files (tests excluded).
+## Status and limitations
 
-#### Test Coverage
-The test suite covers:
-- Extension loading and service worker
-- Popup, Options, and Leads page UI
-- Manual lead addition and email extraction
-- Settings persistence
-- TOS compliance verification
-- Email validation
+- Archived. No further features will be added, for the reasons in "Terms of service".
+- Selectors for LinkedIn and the job boards are best-effort and will rot as those sites change markup.
+- Only emails visible in page text or `mailto:` links are captured. Most job boards do not expose recruiter emails.
+- Not published to the Chrome Web Store.
+
+## License
+
+MIT, see [LICENSE](LICENSE).
